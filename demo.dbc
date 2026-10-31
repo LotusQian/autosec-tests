@@ -1,0 +1,16 @@
+VERSION ""
+
+NS_ :
+
+BS_:
+
+BU_: ECU_Sim Tester
+
+BO_ 256 SecurityAccess: 8 ECU_Sim
+ SG_ Seed : 0|32@1+ (1,0) [0|4294967295] "" Tester
+
+BO_ 512 VehicleStatus: 8 ECU_Sim
+ SG_ VehicleSpeed : 0|16@1+ (0.01,0) [0|250] "km/h" Tester
+ SG_ SteeringAngle : 16|16@1- (0.1,0) [-780|780] "deg" Tester
+ SG_ BrakePressure : 32|12@1+ (0.1,0) [0|250] "bar" Tester
+ SG_ GearPosition : 44|4@1+ (1,0) [0|15] "" Tester

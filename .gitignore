@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# 测试证据（体积大、含现场数据，不进版本库）
+evidence/
+*.pcap
+*.pcapng
+*.blf
+*.asc
+*.trc
+*.mf4
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
