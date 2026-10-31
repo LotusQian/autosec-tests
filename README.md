@@ -16,18 +16,29 @@
 
 ```
 autosec-tests/
-  uds_core.py          UDS 服务端核心（与传输层无关，CAN/DoIP 共用）
+  uds_core.py          UDS 服务端核心（0x10/0x22/0x27/0x2E/0x31/0x34/0x36/0x37/0x11）
   iso_tp_bus.py        python-can 与 isotp 的胶水（换硬件只改这里）
-  sim_ecu.py           把 UdsCore 挂到 CAN 上（0x10 / 0x22 / 0x27 / 0x2E / 0x3E）
+  sim_ecu.py           把 UdsCore 挂到 CAN 上
   doip_gateway.py      DoIP 网关仿真（TCP 13400：路由激活 + 诊断 + 存活检查）
-  secoc.py             SecOC：AES-128-CMAC 截断 + 新鲜度窗口（可切换合规/缺陷实现）
+  secoc.py             SecOC：AES-128-CMAC 截断 + 新鲜度窗口（合规/缺陷双档）
+  flasher.py           刷写客户端：解锁 → 下载 → 传输 → CRC → 验签 → 复位
+  firmware.py          固件初筛：熵扫描 + 特征识别 + 字符串 + 解包（纯标准库）
+  evidence.py          证据链：每次交互落成 json + markdown
   demo.dbc             示例 DBC（3 个信号 + 1 个安全访问报文）
-  conftest.py          fixtures：虚拟总线、Tester 通道、DBC
+  conftest.py          fixtures + 证据链挂钩
+  tools/
+    extract_cases.py   把用例集 Markdown 解析成 cases/registry.json
+  cases/
+    registry.json      73 条文档用例 + 覆盖状态（covered/partial/blocked/todo）
   tests/
     test_uds_security.py   10 条诊断安全用例（CAN）
     test_can_signals.py     5 条信号/DBC/健壮性用例（CAN）
     test_doip.py            9 条 DoIP 用例（4 条正常路径 + 5 条协议层否定）
     test_secoc.py           18 条 SecOC 用例（基线 2 + 攻击面 8 + 对照 8）
+    test_flashing.py        13 条刷写用例（流程 7 + 安全 6）
+    test_firmware.py        10 条固件初筛用例
+    test_case_matrix.py     73 条文档用例的覆盖矩阵 + 4 条自检
+    test_evidence.py        4 条证据链自检
   pytest.ini
   requirements.txt
 ```
@@ -40,7 +51,8 @@ $env:PYTHONUTF8 = '1'                      # 让中文断言信息不乱码
 C:\env\autosec\Scripts\python.exe -m pytest -v
 ```
 
-当前结果：**42 passed**（约 1 秒）。
+当前结果：**146 个测试项 = 85 passed + 61 xfailed**（约 2 秒）。
+xfail 全部来自用例矩阵——那是**故意可见的缺口**，不是失败。
 
 ## 覆盖了什么
 
@@ -131,6 +143,94 @@ MAC = AES-128-CMAC(K, [PDU_ID] ‖ payload ‖ full_FV)[:24bit]
 不是 SecOC。所以本项目**没有**给 DoIP 链路套 SecOC——硬套是把两个不同层次的机制混为一谈。
 这个边界在面试里经常被问到，能答清楚的人不多。
 
+## 刷写部分
+
+刷写（reprogramming）是整车攻击面里**收益最高**的一环：一次成功就能改固件，而不是改一帧报文。
+
+标准流程与对应服务：
+
+| 步骤 | 服务 | 本项目的校验点 |
+|---|---|---|
+| 安全访问 | 0x27 | 未解锁直接 0x34 → NRC 0x33 |
+| 请求下载 | 0x34 | 地址/长度格式、镜像大小上限 |
+| 传输数据 | 0x36 | 块序号连续、累计长度不超声明值 |
+| 退出传输 | 0x37 | 没传完就退出 → NRC 0x24 |
+| 完整性 | 0x31 FF01 | CRC32 与客户端一致 |
+| 真实性 | 0x31 FF02 | Ed25519 验签 |
+| 复位 | 0x11 | 状态清空 |
+
+**为什么 CRC 和签名都要**：CRC 防的是传输损坏（丢包、位翻转），签名防的是恶意替换。
+只做 CRC 等于"完好地刷入一个假镜像"；只做签名则每次失败都要跑完整验签，日志和耗时都不划算。
+
+四个最有价值的用例：
+
+- `test_tampered_image_fails_signature` —— 用原镜像的签名去刷被改过的镜像
+- `test_corrupted_transfer_is_caught_by_crc` —— 传输途中翻 1 bit，CRC 先抓住
+- `test_block_counter_wraps_past_255` —— 块序号 0xFF→0x00 回绕，这里的 off-by-one 很常见
+- `test_ecu_without_public_key_rejects_signature` —— 没配公钥时**不能静默跳过验签**
+
+## 证据链部分
+
+`146 passed` 不是证据。客户要的是「哪条用例、什么时间、发了什么字节、回了什么字节」。
+
+每次跑测试自动生成：
+
+```
+evidence/20261031-230720/
+  session.json    机器可读：时间戳、用例名、传输类型、请求/响应原始字节
+  session.md      人可读：Markdown 表格，可直接贴进报告附录
+```
+
+```powershell
+pytest                                  # 默认生成
+pytest --no-evidence                    # 关掉
+pytest --evidence-dir D:\case-001       # 指定目录（按项目/客户分）
+```
+
+CI 里每次运行都会把证据包作为 artifact 上传（保留 14 天），评审时可以直接下载。
+
+## 用例矩阵部分
+
+`cases/registry.json` 里是 **73 条**用例——不是我编的，是从 `汽车网络安全面试/` 那套 Markdown 里解析出来的：
+
+```powershell
+python tools/extract_cases.py "C:\Users\ASUS\Desktop\工作\汽车网络安全面试"
+```
+
+状态模型：
+
+| 状态 | 含义 | 在测试里的表现 |
+|---|---|---|
+| `covered` | 有直接对应的自动化用例 | 通过 |
+| `partial` | 只覆盖了部分检查点 | 通过（备注写清覆盖到哪） |
+| `blocked` | 环境不具备（缺硬件/未实现协议） | xfail，**必须写原因** |
+| `todo` | 还没写 | xfail |
+
+关键设计：`test_covered_cases_point_to_existing_tests` 会检查每条覆盖声明是否**真的指向一个存在的测试函数**。
+没有这条自检，矩阵就会在重构后悄悄撒谎。
+
+`blocked` 和 `todo` 分开，是为了让「没做」和「做不了」不混为一谈——这在测评报告里是两个完全不同的结论。
+
+## 固件分析部分
+
+binwalk 在 Windows 上要 WSL，CI 里跑不了。`firmware.py` 是纯标准库实现，Windows / Linux / Actions 都能跑：
+
+```powershell
+python firmware.py scan  update.bin
+python firmware.py carve update.bin out/
+```
+
+`scan` 输出四件事——正好是打开一个未知固件第一分钟想知道的东西：
+
+1. **熵**：整体熵 + 窗口化高熵区（>7.5 视为压缩/加密载荷）
+2. **特征**：19 种魔数（gzip/xz/squashfs/cramfs/JFFS2/UBI/ELF/U-Boot/Android boot/DTB/PEM…）
+3. **字符串**：ASCII 提取 + 可疑项标记（AKIA 密钥、私钥头、URL、`root:`/`debug=`）
+4. **解包**：gzip / xz 成员直接提取
+
+一个实现细节值得说：解压用 `zlib.decompressobj` 而不是 `gzip.decompress`。
+固件里的压缩成员后面通常还跟着别的数据，一次性解压会因为"尾部有多余字节"而失败——
+这个坑在真实固件上非常常见。
+
 ## 换成真实硬件
 
 只改 `conftest.py` 里的三行：
@@ -164,15 +264,24 @@ bus = iso_tp_bus.open_bus(interface=INTERFACE, channel=CHANNEL, bitrate=BITRATE)
 
 - **单 ECU、固定 ID**：真实整车是多 ECU、网关路由、功能寻址。要扩，就把 `SimEcu` 里的
   `req_id/resp_id` 变成列表，或用 `functional_id`。
-- **密钥算法是假的**（`seed ^ 0xA5A5A5A5`）：真实是 HSM 里跑 AES-CMAC。留着是为了让你
-  先练"流程缺陷"，而不是"算法破解"。
-- **没有 SecOC、没有 DoIP、没有刷写（0x34/0x36/0x37）**：这些是下一步。
+- **密钥算法是假的**（`seed ^ 0xA5A5A5A5`）：真实是 HSM 里跑 AES-CMAC。
 - **没有时间参数校验**：P2/P2\*/S3 超时这类用例需要真实 ECU 的响应时间才有意义。
+- **没有 SOME/IP / LIN / 车载以太网二层**：见 `cases/registry.json` 里的 `blocked`。
+- **固件分析只做初筛**：不解 squashfs、不做反编译。深挖需要 Ghidra + binwalk（WSL）。
 
-## 下一步（按性价比）
+## 阶段 A 完成情况
 
-1. **接真硬件**：拿 PCAN 或 CANable，把 `test_tester_present` 跑通。
-2. ~~加 SecOC~~ ✅ 已完成（`secoc.py` + `tests/test_secoc.py`，18 条用例，含缺陷对照）
-3. **加刷写**：0x34 RequestDownload → 0x36 TransferData → 0x37，配 CRC 校验与签名校验。
-4. ~~接 DoIP~~ ✅ 已完成（`doip_gateway.py` + `tests/test_doip.py`，9 条用例）
-5. **证据链**：每次运行把请求/响应写成 `.txt` + `pcap`（`can.Logger`），直接进报告附录。
+| # | 任务 | 状态 | 产物 |
+|---|---|---|---|
+| A1 | SecOC | ✅ | `secoc.py` + 18 条用例（合规/缺陷双档对照） |
+| A2 | 刷写 0x34/0x36/0x37 + CRC + 签名 | ✅ | `flasher.py` + 13 条用例 |
+| A3 | 用例集转 pytest 矩阵 | ✅ | `tools/extract_cases.py` + 73 条用例的 `registry.json` |
+| A4 | 证据链 | ✅ | `evidence.py` + 自动 json/md + CI artifact |
+| A5 | 固件初筛 | ✅ | `firmware.py` + 10 条用例 |
+
+## 下一步：阶段 B（需要硬件）
+
+1. **接真硬件**：PCAN 或 CANable，把 `test_tester_present` 跑通（物理层/波特率/ID 全对）
+2. **真实 DBC**：用实车 DBC 替换 `demo.dbc`，识别周期报文
+3. **UDS 模糊测试**：种子熵、NRC 组合、时序（P2/P2\*）
+4. **双通道场景**：CAN + 以太网经网关路由的联合测试
