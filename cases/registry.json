@@ -1,0 +1,741 @@
+{
+  "source": "汽车网络安全面试",
+  "count": 73,
+  "by_status": {
+    "covered": 8,
+    "partial": 4,
+    "blocked": 18,
+    "todo": 43
+  },
+  "cases": [
+    {
+      "id": "CAN-SNIFF-001",
+      "section": "8.1 CAN 报文嗅探与信号逆向",
+      "file": "006 CAN  CAN FD 安全测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "需要真实 CAN 适配器与目标总线"
+    },
+    {
+      "id": "CAN-REPLAY-002",
+      "section": "8.2 CAN 报文重放攻击测试",
+      "file": "006 CAN  CAN FD 安全测试用例集.md",
+      "status": "partial",
+      "covered_by": [
+        "tests/test_secoc.py::test_rejects_replay"
+      ],
+      "covers": [
+        "重放层面（SecOC 上下文）"
+      ],
+      "note": ""
+    },
+    {
+      "id": "CAN-INJECT-003",
+      "section": "8.3 CAN 报文注入 / 信号欺骗测试",
+      "file": "006 CAN  CAN FD 安全测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "需要真实总线与被控节点"
+    },
+    {
+      "id": "CAN-DOS-004",
+      "section": "8.4 CAN 总线拒绝服务（高优先级占用）测试",
+      "file": "006 CAN  CAN FD 安全测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "需要真实总线时序测量"
+    },
+    {
+      "id": "CAN-BUSOFF-005",
+      "section": "8.5 CAN 错误帧 / Bus-Off 攻击测试",
+      "file": "006 CAN  CAN FD 安全测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "需要触发真实 Bus-Off，虚拟总线无法复现"
+    },
+    {
+      "id": "CAN-FUZZ-006",
+      "section": "8.6 CAN / CAN FD 报文健壮性（Fuzzing）测试",
+      "file": "006 CAN  CAN FD 安全测试用例集.md",
+      "status": "covered",
+      "covered_by": [
+        "tests/test_can_signals.py::test_random_traffic_does_not_kill_ecu",
+        "tests/test_can_signals.py::test_ecu_decodes_fuzzed_frames"
+      ],
+      "covers": [
+        "随机流量健壮性",
+        "字节级模糊解码"
+      ],
+      "note": ""
+    },
+    {
+      "id": "CAN-GW-FILTER-007",
+      "section": "8.7 网关 CAN 路由与过滤绕过测试",
+      "file": "006 CAN  CAN FD 安全测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "需要真实网关"
+    },
+    {
+      "id": "CAN-SECOC-008",
+      "section": "8.8 SecOC 保护报文有效性测试（CAN 侧）",
+      "file": "006 CAN  CAN FD 安全测试用例集.md",
+      "status": "covered",
+      "covered_by": [
+        "tests/test_secoc.py::test_rejects_replay",
+        "tests/test_secoc.py::test_rejects_unsecured_frame",
+        "tests/test_secoc.py::test_vulnerable_implementation_is_detected"
+      ],
+      "covers": [
+        "重放",
+        "降级",
+        "缺陷对照"
+      ],
+      "note": ""
+    },
+    {
+      "id": "LIN-SPOOF-001",
+      "section": "9.1 LIN 总线嗅探与从节点响应欺骗",
+      "file": "007 LIN 与车载以太网安全测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "LIN 未实现"
+    },
+    {
+      "id": "LIN-MASTER-002",
+      "section": "9.2 LIN 调度表篡改与主节点仿冒",
+      "file": "007 LIN 与车载以太网安全测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "LIN 未实现"
+    },
+    {
+      "id": "ETH-VLAN-001",
+      "section": "9.3 车载以太网 VLAN 隔离与跳跃测试",
+      "file": "007 LIN 与车载以太网安全测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "车载以太网二层未实现"
+    },
+    {
+      "id": "ETH-ARP-002",
+      "section": "9.4 车载以太网 ARP 欺骗与中间人测试",
+      "file": "007 LIN 与车载以太网安全测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "车载以太网二层未实现"
+    },
+    {
+      "id": "ETH-SCAN-003",
+      "section": "9.5 车载以太网端口与服务暴露扫描",
+      "file": "007 LIN 与车载以太网安全测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "车载以太网二层未实现"
+    },
+    {
+      "id": "ETH-MACSEC-004",
+      "section": "9.6 MACsec 链路保护有效性测试",
+      "file": "007 LIN 与车载以太网安全测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "MACsec 未实现"
+    },
+    {
+      "id": "ETH-DOS-005",
+      "section": "9.7 车载以太网 DoS / 广播风暴测试",
+      "file": "007 LIN 与车载以太网安全测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "车载以太网二层未实现"
+    },
+    {
+      "id": "UDS-0x10-SESSION-001",
+      "section": "10.1 诊断会话切换与保护测试",
+      "file": "008 UDS 诊断安全测试用例集.md",
+      "status": "partial",
+      "covered_by": [
+        "tests/test_uds_security.py::test_session_control_positive"
+      ],
+      "covers": [
+        "只覆盖正向切换"
+      ],
+      "note": ""
+    },
+    {
+      "id": "UDS-ENUM-002",
+      "section": "10.2 诊断服务全枚举与越权访问矩阵测试",
+      "file": "008 UDS 诊断安全测试用例集.md",
+      "status": "partial",
+      "covered_by": [
+        "tests/test_uds_security.py::test_unknown_service_nrc11"
+      ],
+      "covers": [
+        "只覆盖未知 SID 回 0x11"
+      ],
+      "note": ""
+    },
+    {
+      "id": "UDS-0x27-SEED-003",
+      "section": "10.3 SecurityAccess 种子随机性测试",
+      "file": "008 UDS 诊断安全测试用例集.md",
+      "status": "partial",
+      "covered_by": [
+        "tests/test_uds_security.py::test_seed_must_change_between_requests"
+      ],
+      "covers": [
+        "种子随机性"
+      ],
+      "note": ""
+    },
+    {
+      "id": "UDS-0x27-REPLAY-004",
+      "section": "10.4 SecurityAccess 重放测试",
+      "file": "008 UDS 诊断安全测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "UDS-0x27-BRUTE-005",
+      "section": "10.5 SecurityAccess 暴力破解与失败锁定测试",
+      "file": "008 UDS 诊断安全测试用例集.md",
+      "status": "covered",
+      "covered_by": [
+        "tests/test_uds_security.py::test_lockout_after_three_wrong_keys",
+        "tests/test_uds_security.py::test_wrong_key_nrc35"
+      ],
+      "covers": [
+        "失败锁定",
+        "错误密钥 NRC"
+      ],
+      "note": ""
+    },
+    {
+      "id": "UDS-0x27-ALGO-006",
+      "section": "10.6 SecurityAccess 算法与密钥管理评估",
+      "file": "008 UDS 诊断安全测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "UDS-0x22-DID-007",
+      "section": "10.7 读取数据（0x22）敏感 DID 未授权访问测试",
+      "file": "008 UDS 诊断安全测试用例集.md",
+      "status": "covered",
+      "covered_by": [
+        "tests/test_uds_security.py::test_read_vin_positive",
+        "tests/test_uds_security.py::test_read_unknown_did_nrc31"
+      ],
+      "covers": [
+        "正向读取",
+        "非法 DID"
+      ],
+      "note": ""
+    },
+    {
+      "id": "UDS-0x2E-WRITE-008",
+      "section": "10.8 写数据（0x2E）越权与非法写入测试",
+      "file": "008 UDS 诊断安全测试用例集.md",
+      "status": "covered",
+      "covered_by": [
+        "tests/test_uds_security.py::test_write_denied_before_unlock",
+        "tests/test_uds_security.py::test_unlock_with_correct_key_then_write"
+      ],
+      "covers": [
+        "未授权写入必须拒",
+        "授权后写入"
+      ],
+      "note": ""
+    },
+    {
+      "id": "UDS-0x31-ROUTINE-009",
+      "section": "10.9 例程控制（0x31）越权触发测试",
+      "file": "008 UDS 诊断安全测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "UDS-0x2F-IOCTL-010",
+      "section": "10.10 输入输出控制（0x2F）执行器越权测试",
+      "file": "008 UDS 诊断安全测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "UDS-FLASH-011",
+      "section": "10.11 固件刷写完整性与签名测试（0x34/0x36/0x37 + 0x31）",
+      "file": "008 UDS 诊断安全测试用例集.md",
+      "status": "covered",
+      "covered_by": [
+        "tests/test_flashing.py::test_flash_happy_path",
+        "tests/test_flashing.py::test_tampered_image_fails_signature",
+        "tests/test_flashing.py::test_corrupted_transfer_is_caught_by_crc",
+        "tests/test_flashing.py::test_download_requires_security_access"
+      ],
+      "covers": [
+        "完整刷写",
+        "镜像签名",
+        "CRC",
+        "刷写前置鉴权"
+      ],
+      "note": ""
+    },
+    {
+      "id": "UDS-0x28-0x85-012",
+      "section": "10.12 通信控制（0x28）与 DTC 设置（0x85）滥用测试",
+      "file": "008 UDS 诊断安全测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "UDS-MEM-013",
+      "section": "10.13 内存访问（0x23/0x3D）越权读写测试",
+      "file": "008 UDS 诊断安全测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "UDS-0x3E-014",
+      "section": "10.14 TesterPresent（0x3E）与会话保持滥用测试",
+      "file": "008 UDS 诊断安全测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "UDS-0x11-015",
+      "section": "10.15 ECUReset（0x11）越权与 DoS 测试",
+      "file": "008 UDS 诊断安全测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "DOIP-DISCOVERY-001",
+      "section": "11.1 DoIP 车辆发现信息泄露测试",
+      "file": "009 DoIP  SOMEIP  SecOC 测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "UDP 车辆发现未实现（可扩展）"
+    },
+    {
+      "id": "DOIP-ROUTING-002",
+      "section": "11.2 DoIP 路由激活鉴权与源地址欺骗测试",
+      "file": "009 DoIP  SOMEIP  SecOC 测试用例集.md",
+      "status": "covered",
+      "covered_by": [
+        "tests/test_doip.py::test_routing_activation_success",
+        "tests/test_doip.py::test_diagnostic_without_activation_is_rejected",
+        "tests/test_doip.py::test_unknown_target_address_is_rejected"
+      ],
+      "covers": [
+        "激活成功",
+        "未激活即诊断",
+        "目标地址不存在"
+      ],
+      "note": ""
+    },
+    {
+      "id": "DOIP-DOS-003",
+      "section": "11.3 DoIP 连接耗尽与 DoS 测试",
+      "file": "009 DoIP  SOMEIP  SecOC 测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "需要真实 DoIP 网关"
+    },
+    {
+      "id": "DOIP-TLS-004",
+      "section": "11.4 DoIP over TLS 传输安全测试",
+      "file": "009 DoIP  SOMEIP  SecOC 测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "需要真实 TLS 服务端与证书链"
+    },
+    {
+      "id": "SOMEIP-SD-001",
+      "section": "11.5 SOME/IP-SD 服务发现枚举与伪造服务测试",
+      "file": "009 DoIP  SOMEIP  SecOC 测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "SOME/IP 未实现"
+    },
+    {
+      "id": "SOMEIP-SUB-002",
+      "section": "11.6 SOME/IP 越权订阅与敏感事件泄露测试",
+      "file": "009 DoIP  SOMEIP  SecOC 测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "SOME/IP 未实现"
+    },
+    {
+      "id": "SOMEIP-FUZZ-003",
+      "section": "11.7 SOME/IP 方法调用重放与字段篡改/Fuzz 测试",
+      "file": "009 DoIP  SOMEIP  SecOC 测试用例集.md",
+      "status": "blocked",
+      "covered_by": [],
+      "covers": [],
+      "note": "SOME/IP 未实现"
+    },
+    {
+      "id": "SECOC-VERIFY-001",
+      "section": "11.8 SecOC 机制有效性与覆盖完整性测试（通用）",
+      "file": "009 DoIP  SOMEIP  SecOC 测试用例集.md",
+      "status": "covered",
+      "covered_by": [
+        "tests/test_secoc.py::test_rejects_tampered_mac",
+        "tests/test_secoc.py::test_rejects_wrong_ecu_key"
+      ],
+      "covers": [
+        "MAC 篡改",
+        "密钥隔离"
+      ],
+      "note": ""
+    },
+    {
+      "id": "GW-ISOLATION-001",
+      "section": "12.1 网关跨域隔离与防火墙测试",
+      "file": "010 网关  T-Box  车云  座舱外设测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "GW-CONFIG-002",
+      "section": "12.2 网关刷写与配置越权测试",
+      "file": "010 网关  T-Box  车云  座舱外设测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "TBOX-SURFACE-001",
+      "section": "12.3 T-Box 蜂窝与外部接口攻击面测试",
+      "file": "010 网关  T-Box  车云  座舱外设测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "TBOX-TLS-002",
+      "section": "12.4 T-Box ↔ 云 TLS 通信安全测试",
+      "file": "010 网关  T-Box  车云  座舱外设测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "TBOX-CMD-003",
+      "section": "12.5 T-Box 远程指令与越权控制测试",
+      "file": "010 网关  T-Box  车云  座舱外设测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "BT-PAIR-001",
+      "section": "12.6 座舱蓝牙配对与访问控制测试",
+      "file": "010 网关  T-Box  车云  座舱外设测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "WIFI-AP-001",
+      "section": "12.7 车载 WiFi 热点安全测试",
+      "file": "010 网关  T-Box  车云  座舱外设测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "USB-MEDIA-001",
+      "section": "12.8 USB / 媒体接口安全测试",
+      "file": "010 网关  T-Box  车云  座舱外设测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "RKE-RELAY-001",
+      "section": "12.9 无钥匙进入（RKE/PKE）中继与重放测试",
+      "file": "010 网关  T-Box  车云  座舱外设测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "OTA-CHAIN-001",
+      "section": "13.1 OTA 升级全链路安全测试",
+      "file": "013 OTA  固件分析  渗透  模糊测试专题.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "OTA-PKG-002",
+      "section": "13.2 OTA 升级包结构与签名机制分析",
+      "file": "013 OTA  固件分析  渗透  模糊测试专题.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "FW-EXTRACT-001",
+      "section": "13.3 固件提取方法与流程",
+      "file": "013 OTA  固件分析  渗透  模糊测试专题.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "FW-STATIC-002",
+      "section": "13.4 固件静态分析（硬编码凭据 / 后门 / 漏洞组件）",
+      "file": "013 OTA  固件分析  渗透  模糊测试专题.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "FW-DYNAMIC-003",
+      "section": "13.5 固件动态分析与仿真",
+      "file": "013 OTA  固件分析  渗透  模糊测试专题.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "PENTEST-METHOD-001",
+      "section": "13.6 渗透测试方法论（车载综合）",
+      "file": "013 OTA  固件分析  渗透  模糊测试专题.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "FUZZ-ENGINEERING-001",
+      "section": "13.7 模糊测试工程化专题",
+      "file": "013 OTA  固件分析  渗透  模糊测试专题.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "CHG-DC-001",
+      "section": "17.1 直流充电通信（充电桩 ↔ 车）安全测试",
+      "file": "017 新兴攻击面测试用例集（充电  BMS  V2X  数字钥匙  GNSS  传感器）.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "BMS-001",
+      "section": "17.2 BMS 电池管理系统安全测试",
+      "file": "017 新兴攻击面测试用例集（充电  BMS  V2X  数字钥匙  GNSS  传感器）.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "V2X-001",
+      "section": "17.3 V2X（车路协同）通信安全测试",
+      "file": "017 新兴攻击面测试用例集（充电  BMS  V2X  数字钥匙  GNSS  传感器）.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "DK-001",
+      "section": "17.4 数字钥匙（BLE/NFC/UWB）安全测试",
+      "file": "017 新兴攻击面测试用例集（充电  BMS  V2X  数字钥匙  GNSS  传感器）.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "GNSS-001",
+      "section": "17.5 GNSS 定位欺骗与干扰测试",
+      "file": "017 新兴攻击面测试用例集（充电  BMS  V2X  数字钥匙  GNSS  传感器）.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "ADAS-SENSOR-001",
+      "section": "17.6 ADAS 传感器（摄像头/雷达/激光）欺骗测试（了解层）",
+      "file": "017 新兴攻击面测试用例集（充电  BMS  V2X  数字钥匙  GNSS  传感器）.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "IVI-SYS-001",
+      "section": "18.1 车机系统加固与调试接口测试",
+      "file": "018 车机（IVI  Android）系统与应用安全测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "IVI-APP-001",
+      "section": "18.2 车机应用（APK）安全测试",
+      "file": "018 车机（IVI  Android）系统与应用安全测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "IVI-ISOLATION-001",
+      "section": "18.3 车机到车控的权限隔离测试（关键）",
+      "file": "018 车机（IVI  Android）系统与应用安全测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "IVI-WEB-001",
+      "section": "18.4 车机 Web / 后端接口安全测试",
+      "file": "018 车机（IVI  Android）系统与应用安全测试用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "DATA-SEC-001",
+      "section": "19.3 数据安全测试点",
+      "file": "019 数据安全与隐私合规（含中国法规）.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "PRIVACY-001",
+      "section": "19.4 隐私合规测试点",
+      "file": "019 数据安全与隐私合规（含中国法规）.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "DIAG-SPOOF-001",
+      "section": "33.1 诊断仪/上位机仿冒测试",
+      "file": "033 专项测试补充用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "BL-SEC-001",
+      "section": "33.2 Bootloader 安全专项测试",
+      "file": "033 专项测试补充用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "HSM-KEY-001",
+      "section": "33.3 HSM 与密钥管理测试",
+      "file": "033 专项测试补充用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "IDS-001",
+      "section": "33.4 车载 IDS/IDPS 有效性测试",
+      "file": "033 专项测试补充用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "LOG-IR-001",
+      "section": "33.5 安全日志与事件响应测试",
+      "file": "033 专项测试补充用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "SC-SBOM-001",
+      "section": "33.6 供应链与 SBOM 安全测试",
+      "file": "033 专项测试补充用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    },
+    {
+      "id": "FUSA-CS-001",
+      "section": "33.7 功能安全 × 信息安全接口测试",
+      "file": "033 专项测试补充用例集.md",
+      "status": "todo",
+      "covered_by": [],
+      "covers": [],
+      "note": ""
+    }
+  ]
+}
