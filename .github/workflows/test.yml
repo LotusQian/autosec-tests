@@ -30,3 +30,12 @@ jobs:
         env:
           PYTHONUTF8: '1'
         run: pytest -v
+
+      - name: Upload evidence package
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidence
+          path: evidence/
+          if-no-files-found: warn
+          retention-days: 14

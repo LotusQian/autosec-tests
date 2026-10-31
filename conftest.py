@@ -1,9 +1,12 @@
+import os
 import time
+from datetime import datetime
 from pathlib import Path
 
 import cantools
 import pytest
 
+import evidence
 import iso_tp_bus
 from sim_ecu import SimEcu
 
@@ -37,10 +40,12 @@ def client(ecu):
     bus = iso_tp_bus.open_bus(channel=CHANNEL)
     tp = iso_tp_bus.make_transport(bus, rxid=RESP_ID, txid=REQ_ID)
 
-    def request(payload, timeout=2.0):
+    def request(payload, timeout=2.0, note=""):
         tp.send(bytes(payload), send_timeout=1)
         resp = tp.recv(block=True, timeout=timeout)
-        return bytes(resp) if resp else b""
+        out = bytes(resp) if resp else b""
+        evidence.record(bytes(payload), out, transport="can-iso-tp", note=note)
+        return out
 
     request.tp = tp
     request.bus = bus
@@ -52,3 +57,30 @@ def client(ecu):
 @pytest.fixture(scope="session")
 def dbc():
     return cantools.database.load_file(str(Path(__file__).parent / "demo.dbc"))
+
+
+# ---------------- 证据链挂钩 ----------------
+def pytest_addoption(parser):
+    parser.addoption("--no-evidence", action="store_true", default=False,
+                     help="不生成证据包（默认生成到 evidence/<时间戳>/）")
+    parser.addoption("--evidence-dir", action="store", default=None,
+                     help="指定证据包输出目录")
+
+
+def pytest_sessionstart(session):
+    if session.config.getoption("--no-evidence"):
+        return
+    out = session.config.getoption("--evidence-dir")
+    if not out:
+        out = os.path.join("evidence", datetime.now().strftime("%Y%m%d-%H%M%S"))
+    evidence.init(out)
+
+
+def pytest_runtest_setup(item):
+    evidence.begin(item.nodeid.split("::")[-1])
+
+
+def pytest_sessionfinish(session, exitstatus):
+    paths = evidence.finish(exitstatus)
+    if paths:
+        print(f"\n[evidence] {paths['count']} 条交互记录 -> {paths['md']}")

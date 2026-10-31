@@ -11,6 +11,8 @@ import time
 import pytest
 from doipclient import DoIPClient
 
+import evidence
+
 from doip_gateway import (
     DoIpGateway,
     PT_ALIVE_CHECK_REQUEST,
@@ -47,7 +49,9 @@ def doip(gw):
 def uds(doip, req):
     """DoIP 上的 UDS 一问一答。send_diagnostic 返回只代表收到肯定确认。"""
     doip.send_diagnostic(bytes(req))
-    return bytes(doip.receive_diagnostic())
+    resp = bytes(doip.receive_diagnostic())
+    evidence.record(bytes(req), resp, transport="doip-tcp")
+    return resp
 
 
 # ---------------- 裸 socket 工具 ----------------
