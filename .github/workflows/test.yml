@@ -9,7 +9,12 @@ on:
 
 jobs:
   pytest:
-    runs-on: windows-latest
+    # 同时跑 Windows 和 macOS：证明这套靶场不依赖某个操作系统的特殊行为
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
 
     steps:
@@ -35,7 +40,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: evidence
+          name: evidence-${{ matrix.os }}
           path: evidence/
           if-no-files-found: warn
           retention-days: 14
