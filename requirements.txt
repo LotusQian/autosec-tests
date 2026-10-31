@@ -1,6 +1,7 @@
 python-can==4.6.1
 can-isotp==2.0.7
 cantools==45.1.2
+cryptography==49.0.0
 doipclient==1.2.2
 udsoncan==1.26.1
 scapy==2.8.0

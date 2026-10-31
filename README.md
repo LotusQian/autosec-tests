@@ -20,12 +20,14 @@ autosec-tests/
   iso_tp_bus.py        python-can 与 isotp 的胶水（换硬件只改这里）
   sim_ecu.py           把 UdsCore 挂到 CAN 上（0x10 / 0x22 / 0x27 / 0x2E / 0x3E）
   doip_gateway.py      DoIP 网关仿真（TCP 13400：路由激活 + 诊断 + 存活检查）
+  secoc.py             SecOC：AES-128-CMAC 截断 + 新鲜度窗口（可切换合规/缺陷实现）
   demo.dbc             示例 DBC（3 个信号 + 1 个安全访问报文）
   conftest.py          fixtures：虚拟总线、Tester 通道、DBC
   tests/
     test_uds_security.py   10 条诊断安全用例（CAN）
     test_can_signals.py     5 条信号/DBC/健壮性用例（CAN）
     test_doip.py            9 条 DoIP 用例（4 条正常路径 + 5 条协议层否定）
+    test_secoc.py           18 条 SecOC 用例（基线 2 + 攻击面 8 + 对照 8）
   pytest.ini
   requirements.txt
 ```
@@ -38,7 +40,7 @@ $env:PYTHONUTF8 = '1'                      # 让中文断言信息不乱码
 C:\env\autosec\Scripts\python.exe -m pytest -v
 ```
 
-当前结果：**24 passed**（约 1 秒）。
+当前结果：**42 passed**（约 1 秒）。
 
 ## 覆盖了什么
 
@@ -61,6 +63,14 @@ C:\env\autosec\Scripts\python.exe -m pytest -v
 | `test_unsupported_payload_type_gets_generic_nack` | 未知载荷类型 → 通用 NACK 0x01 |
 | `test_alive_check` | 0x0007/0x0008 存活检查 |
 | `test_security_access_state_survives_tcp` | 安全访问状态必须绑定在 TCP 连接上，不能跨连接串状态 |
+| `test_rejects_replay` | **重放**：同一帧再发一次，FV 没前进就必须拒 |
+| `test_rejects_stale_fv` | **旧帧回放**：滞后于窗口下界的 FV |
+| `test_rejects_fv_too_far_ahead` | FV 跳跃超窗口（伪造未来帧） |
+| `test_rejects_tampered_mac` | MAC 改 1 bit |
+| `test_rejects_cross_pdu_transplant` | **跨报文移植**：MAC 未绑定 PDU ID 时可把 A 报文的 MAC 贴到 B 上 |
+| `test_rejects_unsecured_frame` | **降级**：发裸报文，必须 fail-closed，不能当合法 |
+| `test_rejects_wrong_ecu_key` | **密钥不隔离**：拿 B 的密钥签 A 的报文 |
+| `test_vulnerable_implementation_is_detected` ×4 | 对照组：同样的攻击在缺陷实现上必须成功，否则用例是摆设 |
 
 前 6 个"缺陷检测"用例，在真实 ECU 上复现时就是**可直接写进报告的发现**。
 
@@ -85,6 +95,41 @@ C:\env\autosec\Scripts\python.exe -m pytest -v
 ```python
 client = DoIPClient("192.168.1.10", 0x0E80, tcp_port=13400, client_logical_address=0x0E00)
 ```
+
+## SecOC 部分
+
+**它解决什么**：CAN 报文本身没有任何认证。任何能接上总线的人都能伪造一条「扭矩请求 300 Nm」，
+接收端照单全收。SecOC 给每条报文加一个**截断 MAC** 和一个**新鲜度值（FV）**，接收端验证通过才采信。
+
+**线路格式**（本项目实现）：
+
+```
+authentic PDU ‖ 截断 FV(1 字节) ‖ 截断 MAC(3 字节)        → 8 字节报文变成 12 字节
+MAC = AES-128-CMAC(K, [PDU_ID] ‖ payload ‖ full_FV)[:24bit]
+```
+
+**为什么做成两套实现**：`secoc.py` 的 `SecoCConfig` 有四个开关，`compliant_config()` 全开、
+`vulnerable_config()` 全关。同一组攻击跑两遍：
+
+| | 合规实现 | 缺陷实现 |
+|---|---|---|
+| 重放 / 旧帧 | 必须拦住 | 必须放过 |
+| 跨报文移植 | 必须拦住 | 必须放过 |
+| 降级为裸报文 | 必须拦住（fail-closed） | 必须放过（fail-open） |
+
+第二条不是凑数的——**如果那条用例在缺陷实现上也拦住了，说明它根本没测到东西**。
+这是测评用例最容易被忽略的自检。
+
+**四个攻击面对应的真实缺陷**：
+
+1. **新鲜度不校验** → 攻击者录一条刹车指令反复重放
+2. **MAC 不绑定 PDU ID** → 把低价值报文的 MAC 挪到高价值报文上
+3. **fail-open** → 只要不发 SecOC 字段就能绕过（最容易被漏测，因为它**不报错**）
+4. **密钥全局共用** → 拆掉一个节点就能伪造全网
+
+**边界（重要）**：SecOC 是 **CAN / CAN FD** 的方案。到了车载以太网，业界用 TLS / MACsec，
+不是 SecOC。所以本项目**没有**给 DoIP 链路套 SecOC——硬套是把两个不同层次的机制混为一谈。
+这个边界在面试里经常被问到，能答清楚的人不多。
 
 ## 换成真实硬件
 
@@ -127,7 +172,7 @@ bus = iso_tp_bus.open_bus(interface=INTERFACE, channel=CHANNEL, bitrate=BITRATE)
 ## 下一步（按性价比）
 
 1. **接真硬件**：拿 PCAN 或 CANable，把 `test_tester_present` 跑通。
-2. **加 SecOC**：用 `cryptography` 做 CMAC，模拟新鲜度值 + 截断 MAC，写"重放/降级"用例。
+2. ~~加 SecOC~~ ✅ 已完成（`secoc.py` + `tests/test_secoc.py`，18 条用例，含缺陷对照）
 3. **加刷写**：0x34 RequestDownload → 0x36 TransferData → 0x37，配 CRC 校验与签名校验。
 4. ~~接 DoIP~~ ✅ 已完成（`doip_gateway.py` + `tests/test_doip.py`，9 条用例）
 5. **证据链**：每次运行把请求/响应写成 `.txt` + `pcap`（`can.Logger`），直接进报告附录。
