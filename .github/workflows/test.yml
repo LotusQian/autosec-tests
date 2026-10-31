@@ -1,0 +1,32 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    runs-on: windows-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Show versions
+        run: python -c "import can, isotp, cantools, doipclient, scapy, pytest; print('python-can', can.__version__); print('can-isotp', isotp.__version__); print('cantools', cantools.__version__); print('scapy', scapy.__version__); print('pytest', pytest.__version__)"
+
+      - name: Run tests
+        env:
+          PYTHONUTF8: '1'
+        run: pytest -v

@@ -1,5 +1,8 @@
 # autosec-tests — 汽车诊断安全的最小可跑靶场
 
+[![tests](https://github.com/LotusQian/autosec-tests/actions/workflows/test.yml/badge.svg)](https://github.com/LotusQian/autosec-tests/actions/workflows/test.yml)
+[![python](https://img.shields.io/badge/python-3.11-blue)](https://www.python.org/)
+
 不需要任何 CAN 硬件。用一个**虚拟 CAN 总线 + 仿真 ECU**，把桌面
 `汽车网络安全面试\008 UDS 诊断安全测试用例集` 里的断言变成可执行的 pytest。
 
