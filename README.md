@@ -4,6 +4,7 @@
 [![python](https://img.shields.io/badge/python-3.11-blue)](https://www.python.org/)
 
 > 要改这个仓库？先看 [CONTRIBUTING.md](CONTRIBUTING.md)：本地怎么跑、加用例的五步、提交规范、绝对不能提交的东西。
+> 想知道**为什么这么设计**？看 [ARCHITECTURE.md](ARCHITECTURE.md)：三层架构、四个不能改的决定、代码地图。
 
 不需要任何 CAN 硬件。用一个**虚拟 CAN 总线 + 仿真 ECU**，把桌面
 `汽车网络安全面试\008 UDS 诊断安全测试用例集` 里的断言变成可执行的 pytest。
