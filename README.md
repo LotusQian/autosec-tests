@@ -102,7 +102,7 @@ xfail 全部来自用例矩阵——那是**故意可见的缺口**，不是失�
 抓包验证：
 
 ```powershell
-& C:\Tools\Wireshark\tshark.exe -i loopback -f "tcp port 13402" -V
+& C:\Tools\Wireshark\tshark.exe -i "\Device\NPF_Loopback" -f "tcp port 13402" -V
 ```
 
 改端点只需换 `DoIPClient` 的三个参数（真车一般是网关 IP + 0x0E80 之类的逻辑地址）：
